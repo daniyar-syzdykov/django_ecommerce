@@ -9,6 +9,8 @@ djangorestframework = "*"
 marshmallow = "*"
 autopep8 = "*"
 psycopg2-binary = "*"
+djangorestframework-simplejwt = "*"
+requests = "*"
 
 [dev-packages]
 

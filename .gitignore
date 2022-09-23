@@ -135,3 +135,7 @@ GitHub.sublime-settings
 !.vscode/launch.json 
 !.vscode/extensions.json 
 .history
+
+create_dummy.py
+environment.py
+test.py
