@@ -19,7 +19,7 @@ def test_view(request: Request):
 def get_all_users(request: Request):
     users = Customer.objects.all()
     ret = CustomerSrializer(users, many=True)
-    return Response({'success': True, 'data': ret.data})
+    return api_response(success=True, data=ret.data)
 
 
 @api_view(['GET', ])
@@ -61,16 +61,22 @@ def add_to_wish_list(request: Request):
     return api_response(success=True, status_code=201)
 
 
-@api_view(['POST', ])
+@api_view(['POST', 'DELETE'])
 @permission_classes([IsAuthenticated])
-def add_to_cart(request: Request):
+def cart(request: Request):
     product_id = request.data.get('product_id', None)
     if not Product.objects.filter(id=product_id).exists():
         message = f'Product with id: {product_id} does not exists.'
         return api_response(success=False, message=message)
     user = Customer.objects.get(id=request.user.id)
-    user.cart.add(product_id)
-    return api_response(success=True)
+
+    if request.method == 'POST':
+        user.cart.add(product_id)
+        return api_response(success=True, message='Product was added to customers cart')
+
+    elif request.method == 'DELETE':
+        user.cart.remove(product_id)
+        return api_response(success=True, message='Product was deleted from customers cart')
 
 
 def query_products(product_ids: list[int]) -> list[Product] | None:
@@ -102,6 +108,10 @@ def create_new_order(user: Customer, products: list[Product]):
     return ordered_objects
 
 
+def delete_from_cart(user: Customer):
+    Order.objects.filter(customer=user.id)
+
+
 @api_view(['POST', ])
 @permission_classes([IsAuthenticated])
 def purchase(request: Request):
@@ -116,6 +126,7 @@ def purchase(request: Request):
     final_price = sum([product.price for product in products])
     ordered = create_new_order(request.user, products)
     print(ordered)
+    delete_from_cart(request.user)
 
     data = {'id': request.user.id, 'products': cart, 'final price': final_price}
     return api_response(success=True, data=data)

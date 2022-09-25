@@ -4,13 +4,6 @@ from rest_framework.validators import UniqueValidator
 from customer.models import Customer, Order, OrderDetails
 
 
-class CustomerSrializer(serializers.ModelSerializer):
-    class Meta:
-        model = Customer
-        # fields = ['usernmae', 'email', 'whish_list', 'first_name', 'last_name']
-        fields = '__all__'
-
-
 class CustomerCreationSerializer(serializers.ModelSerializer):
     username = serializers.CharField(
         validators=[UniqueValidator(Customer.objects.all()), ])
@@ -56,4 +49,13 @@ class OrderSerializer(serializers.ModelSerializer):
 class OrderDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderDetails
+        fields = '__all__'
+
+
+class CustomerSrializer(serializers.ModelSerializer):
+    orders = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+
+    class Meta:
+        model = Customer
+        # fields = ['usernmae', 'email', 'whish_list', 'first_name', 'last_name']
         fields = '__all__'
