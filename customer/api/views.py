@@ -68,7 +68,7 @@ def cart(request: Request):
     if not Product.objects.filter(id=product_id).exists():
         message = f'Product with id: {product_id} does not exists.'
         return api_response(success=False, message=message)
-    user = Customer.objects.get(id=request.user.id)
+    user: Customer = Customer.objects.get(id=request.user.id)
 
     if request.method == 'POST':
         user.cart.add(product_id)
@@ -108,12 +108,34 @@ def create_new_order(user: Customer, products: list[Product]):
     return ordered_objects
 
 
-def delete_from_cart(user: Customer):
-    Order.objects.filter(customer=user.id)
+def delete_from_cart(user: Customer, products: list[Product]):
+    "TODO make this function more raliable"
+    for product in products:
+        try:
+            user.cart.remove(product.id)
+        except Exception as e:
+            print(e)
 
 
 @api_view(['POST', ])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser, ])
+def make_staff(request: Request):
+    employee: Customer = Customer.objects.filter(
+        id=request.data['employee_id']).update(is_staff=True)
+    message = f'User is now employee'
+    return api_response(success=True, message=message)
+
+
+
+@api_view(['GET', ])
+def get_order(request: Request, id: int):
+    order = Order.objects.get(id=id)
+    order = OrderSerializer(order)
+    return api_response(success=True, data=order.data)
+
+
+@api_view(['POST', ])
+@permission_classes([IsAuthenticated, ])
 def purchase(request: Request):
     cart = get_user_cart(request.user)
     if not cart:
@@ -121,12 +143,12 @@ def purchase(request: Request):
 
     products = query_products(cart)
     if not products:
-        return api_response(success=False, message='Something went wrong')
+        return api_response(success=False, message='These products no longer exists')
 
     final_price = sum([product.price for product in products])
     ordered = create_new_order(request.user, products)
-    print(ordered)
-    delete_from_cart(request.user)
+    # print(ordered)
+    delete_from_cart(request.user, products)
 
     data = {'id': request.user.id, 'products': cart, 'final price': final_price}
     return api_response(success=True, data=data)

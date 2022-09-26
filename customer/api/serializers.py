@@ -40,20 +40,24 @@ class CustomerCreationSerializer(serializers.ModelSerializer):
         return customer
 
 
-class OrderSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Order
-        fields = '__all__'
-
-
 class OrderDetailsSerializer(serializers.ModelSerializer):
     class Meta:
         model = OrderDetails
         fields = '__all__'
 
 
+class OrderSerializer(serializers.ModelSerializer):
+    details = OrderDetailsSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Order
+        fields = '__all__'
+        # fields = ['id', 'uuid', 'order_details']
+
+
 class CustomerSrializer(serializers.ModelSerializer):
-    orders = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    # orders = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    orders = OrderSerializer(many=True, read_only=True)
 
     class Meta:
         model = Customer

@@ -15,11 +15,12 @@ class Customer(AbstractUser):
 
 class Order(models.Model):
     uuid = models.UUIDField(default=uuid.uuid4)
-    customer = models.ForeignKey(Customer, related_name='orders', on_delete=models.CASCADE)
+    customer = models.ForeignKey(
+        Customer, related_name='orders', on_delete=models.CASCADE)
 
 
 class OrderDetails(models.Model):
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, related_name='details', on_delete=models.CASCADE)
     product = models.ForeignKey('store.Product', on_delete=models.CASCADE)
     status = models.CharField(max_length=50)
     created_at = models.DateTimeField(default=datetime.now, editable=False)
