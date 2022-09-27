@@ -126,7 +126,6 @@ def make_staff(request: Request):
     return api_response(success=True, message=message)
 
 
-
 @api_view(['GET', ])
 def get_order(request: Request, id: int):
     order = Order.objects.get(id=id)
@@ -146,8 +145,7 @@ def purchase(request: Request):
         return api_response(success=False, message='These products no longer exists')
 
     final_price = sum([product.price for product in products])
-    ordered = create_new_order(request.user, products)
-    # print(ordered)
+    create_new_order(request.user, products)
     delete_from_cart(request.user, products)
 
     data = {'id': request.user.id, 'products': cart, 'final price': final_price}
